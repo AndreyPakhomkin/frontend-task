@@ -5,13 +5,17 @@ const AboutUs = () => {
     const [info, setInfo] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("http://localhost:3001/info")
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.success) {
-                    setInfo(data.data.info);
-                }
-            });
+        try {
+            fetch("http://localhost:3001/info")
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success) {
+                        setInfo(data.data.info);
+                    }
+                });
+        } catch (error) {
+            console.error(error)
+        }
     }, []);
 
     return (

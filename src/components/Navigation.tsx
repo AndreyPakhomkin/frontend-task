@@ -4,7 +4,15 @@ import { Link } from "react-router-dom";
 
 const Navigation: React.FC = () => {
     return (
-        <Container maxWidth="sm">
+        <Container
+            maxWidth="sm"
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: '2rem',
+                gap: '0.5rem'
+            }}
+        >
             <Button
                 variant="outlined"
                 color="inherit"
