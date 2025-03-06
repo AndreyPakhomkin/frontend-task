@@ -5,6 +5,7 @@ import Avatar from "@mui/material/Avatar";
 import { deepPurple } from "@mui/material/colors";
 import { useAppDispatch } from "../store/hooks";
 import { setError } from "../store/reducers/errorSlice";
+import MuiModal from "../components/Modal";
 
 const Profile: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -12,12 +13,13 @@ const Profile: React.FC = () => {
     const user = useAppSelector(state => state.user);
     const [userFullName, setUserFullName] = useState<string>();
     const [userInitials, setUserInitials] = useState<string>("UN");
-    const [quote, setQuote] = useState<string>();
+    const [quote, setQuote] = useState({ author: null, quote: null });
+    const [fetchQuoteStatus, setFetchQuoteStatus] = useState({ author: false, quote: false });
+    const [loadingQuote, setLoadingQuote] = useState(false);
+    const [abortController, setAbortController] = useState<AbortController | null>(null);
 
     useEffect(() => {
-        const params = '?token=' + user.token
-
-        fetch("http://localhost:3001/profile" + params, {
+        fetch(`http://localhost:3001/profile?token=${user.token}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -45,6 +47,72 @@ const Profile: React.FC = () => {
             setUserInitials(initials);
         }
     }, [userFullName]);
+
+    async function fetchQuote() {
+        const controller = new AbortController();
+        const { signal } = controller;
+        setAbortController(controller);
+        setFetchQuoteStatus({ author: false, quote: false })
+        setLoadingQuote(true);
+
+        const newQuote = { author: null, quote: null };
+
+        fetch(`http://localhost:3001/author?token=${user.token}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            signal
+        })
+            .then(res => res.json())
+            .then(data1 => {
+                if (!data1.success) {
+                    dispatch(setError({ errorStatus: true, errorMessage: data1.data.message }));
+                }
+
+                newQuote.author = data1.data.name;
+                setFetchQuoteStatus(prev => ({ ...prev, author: true }));
+
+                return fetch(`http://localhost:3001/quote?token=${user.token}&authorId=${data1.data.authorId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    signal
+                });
+            })
+            .then(res => res.json())
+            .then(data2 => {
+                if (data2.success) {
+                    newQuote.quote = data2.data.quote
+                    setFetchQuoteStatus(prev => ({ ...prev, quote: true }));
+                } else {
+                    dispatch(setError({ errorStatus: true, errorMessage: data2.data.message }));
+                }
+            })
+            .catch(error => {
+                if (error.name === 'AbortError') {
+                    dispatch(setError({ errorStatus: true, errorMessage: 'Request aborted' }));
+                } else {
+                    dispatch(setError({ errorStatus: true, errorMessage: error.message }));
+                }
+            })
+            .finally(() => {
+                if (newQuote.author && newQuote.quote) {
+                    setQuote(newQuote);
+                    setTimeout(() => setLoadingQuote(false), 1000);
+                }
+            });
+
+        return controller.abort;
+    }
+
+    const handleCancel = () => {
+        if (abortController) {
+            abortController.abort();
+            setLoadingQuote(false);
+        }
+    }
 
     return (
         <Box sx={{
@@ -83,6 +151,7 @@ const Profile: React.FC = () => {
                     </Typography>
                     <Button
                         variant="contained"
+                        onClick={fetchQuote}
                         sx={{
                             width: '120px'
                         }}
@@ -97,8 +166,9 @@ const Profile: React.FC = () => {
                     textAlign: "center"
                 }}
             >
-                {quote || 'Here will be a quote for you.'}
+                {quote.quote ? `${quote.author}: ${quote.quote}` : 'Here will be a quote for you.'}
             </Typography>
+            <MuiModal authorQuote={fetchQuoteStatus} onCancel={handleCancel} open={loadingQuote} />
         </Box>
     )
 }
