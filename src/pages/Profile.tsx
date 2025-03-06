@@ -6,39 +6,43 @@ import { deepPurple } from "@mui/material/colors";
 import { useAppDispatch } from "../store/hooks";
 import { setError } from "../store/reducers/errorSlice";
 import MuiModal from "../components/Modal";
+import Skeleton from "@mui/material/Skeleton";
+import { setUserName } from "../store/reducers/userSlice";
+import { setQuote } from "../store/reducers/infoSlice";
 
 const Profile: React.FC = () => {
     const dispatch = useAppDispatch();
 
-    const user = useAppSelector(state => state.user);
-    const [userFullName, setUserFullName] = useState<string>();
+    const { token, fullName } = useAppSelector(state => state.user);
+    const { author, quote } = useAppSelector(state => state.information.quote);
     const [userInitials, setUserInitials] = useState<string>("UN");
-    const [quote, setQuote] = useState({ author: null, quote: null });
     const [fetchQuoteStatus, setFetchQuoteStatus] = useState({ author: false, quote: false });
     const [loadingQuote, setLoadingQuote] = useState(false);
     const [abortController, setAbortController] = useState<AbortController | null>(null);
 
     useEffect(() => {
-        fetch(`http://localhost:3001/profile?token=${user.token}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setUserFullName(data.data.fullname);
-                } else {
-                    dispatch(setError({ errorStatus: true, errorMessage: data.data.message }))
+        if (!fullName) {
+            fetch(`http://localhost:3001/profile?token=${token}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
                 }
             })
-            .catch(error => console.error("Ошибка загрузки:", error));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        dispatch(setUserName(data.data.fullname));
+                    } else {
+                        dispatch(setError({ errorStatus: true, errorMessage: data.data.message }))
+                    }
+                })
+                .catch(error => console.error("Ошибка загрузки:", error));
+        }
     }, []);
 
     useEffect(() => {
-        if (userFullName) {
-            const names = userFullName.trim().split(/\s+/);
+        if (fullName) {
+            const names = fullName.trim().split(/\s+/);
             const initials = names
                 .slice(0, 2)
                 .map(name => name.charAt(0).toUpperCase())
@@ -46,7 +50,7 @@ const Profile: React.FC = () => {
 
             setUserInitials(initials);
         }
-    }, [userFullName]);
+    }, [fullName]);
 
     async function fetchQuote() {
         const controller = new AbortController();
@@ -57,7 +61,7 @@ const Profile: React.FC = () => {
 
         const newQuote = { author: null, quote: null };
 
-        fetch(`http://localhost:3001/author?token=${user.token}`, {
+        fetch(`http://localhost:3001/author?token=${token}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -73,7 +77,7 @@ const Profile: React.FC = () => {
                 newQuote.author = data1.data.name;
                 setFetchQuoteStatus(prev => ({ ...prev, author: true }));
 
-                return fetch(`http://localhost:3001/quote?token=${user.token}&authorId=${data1.data.authorId}`, {
+                return fetch(`http://localhost:3001/quote?token=${token}&authorId=${data1.data.authorId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json"
@@ -99,7 +103,7 @@ const Profile: React.FC = () => {
             })
             .finally(() => {
                 if (newQuote.author && newQuote.quote) {
-                    setQuote(newQuote);
+                    dispatch(setQuote(newQuote));
                     setTimeout(() => setLoadingQuote(false), 1000);
                 }
             });
@@ -132,7 +136,7 @@ const Profile: React.FC = () => {
                         fontSize: '3rem'
                     }}
                 >
-                    {userFullName ? userInitials : 'UN'}
+                    {fullName ? userInitials : '...'}
                 </Avatar>
                 <Box
                     sx={{
@@ -141,14 +145,19 @@ const Profile: React.FC = () => {
                         justifyContent: "space-between"
                     }}
                 >
-                    <Typography
-                        variant="h4"
-                        sx={{
+                    {fullName ?
+                        <Typography
+                            variant="h4"
+                            sx={{
 
-                        }}
-                    >
-                        {userFullName ? `Welcome, ${userFullName}!` : 'Loading...'}
-                    </Typography>
+                            }}
+                        >
+                            Welcome, {fullName}!
+                        </Typography>
+                        :
+                        <Skeleton variant="rounded" width={300} height={42} animation="wave" />
+                    }
+
                     <Button
                         variant="contained"
                         onClick={fetchQuote}
@@ -166,7 +175,7 @@ const Profile: React.FC = () => {
                     textAlign: "center"
                 }}
             >
-                {quote.quote ? `${quote.author}: ${quote.quote}` : 'Here will be a quote for you.'}
+                {quote ? `${author}: "${quote}"` : 'Here will be a quote for you.'}
             </Typography>
             <MuiModal authorQuote={fetchQuoteStatus} onCancel={handleCancel} open={loadingQuote} />
         </Box>

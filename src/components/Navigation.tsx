@@ -2,9 +2,10 @@ import React from "react";
 import { Container, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { setUser } from "../store/reducers/userSlice";
+import { deleteUser } from "../store/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 import { setError } from "../store/reducers/errorSlice";
+import { deleteQuote } from "../store/reducers/infoSlice";
 
 const Navigation: React.FC = () => {
     const navigate = useNavigate();
@@ -22,16 +23,9 @@ const Navigation: React.FC = () => {
             .then((res) => res.json())
             .then((data) => {
                 if (data.success) {
-                    const userData = {
-                        token: data.data.token,
-                        loggedIn: true
-                    }
-                    dispatch(setUser(userData));
+                    dispatch(deleteUser());
+                    dispatch(deleteQuote());
                     navigate('/');
-                    dispatch(setUser({
-                        loggedIn: false,
-                        token: null
-                    }));
                 } else {
                     dispatch(setError({ errorStatus: true, errorMessage: data.data.message }))
                 }
@@ -101,7 +95,7 @@ const Navigation: React.FC = () => {
                     }}
                     onClick={logOut}
                 >
-                    Sing Out
+                    Sign Out
                 </Button>
             }
         </ Container >
