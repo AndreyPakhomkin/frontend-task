@@ -11,8 +11,6 @@ const Navigation: React.FC = () => {
     const logOut = () => {
         dispatch(setUser({
             loggedIn: false,
-            email: null,
-            password: null,
             token: null
         }))
     }

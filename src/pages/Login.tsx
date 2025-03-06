@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useAppDispatch } from "../store/hooks";
 import { setUser } from "../store/reducers/userSlice";
+import { setError } from "../store/reducers/errorSlice";
 import { useNavigate } from "react-router-dom";
 
 interface Formdata {
@@ -24,28 +25,44 @@ const Login: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        try {
-            fetch("http://localhost:3001/login")
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.success) {
-                        const userData = {
-                            email: formData.email,
-                            password: formData.password,
-                            token: String(data.token),
-                            loggedIn: true
-                        }
-                        dispatch(setUser(userData));
-                        setLoading(false);
-                        navigate('/profile');
-                    }
-                });
-        } catch (error) {
-            console.error(error)
+
+        const params = {
+            email: formData.email,
+            password: formData.password
         }
+
+        fetch("http://localhost:3001/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(params)
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success) {
+                    const userData = {
+                        token: data.token,
+                        loggedIn: true
+                    }
+                    dispatch(setUser(userData));
+                    navigate('/profile');
+                } else {
+                    dispatch(setError({ errorStatus: true, errorMessage: data.data.message }))
+                }
+                setLoading(false);
+            })
+            .catch(error => console.error("Ошибка загрузки:", error));
     };
 
-    const isFormValid = formData.email.trim() !== '' && formData.password.trim() !== '';
+    const isValidEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const isFormValid = formData.email.trim() !== '' &&
+        formData.password.trim() !== '' &&
+        isValidEmail(formData.email);
 
     return (
         <Box>
@@ -77,6 +94,10 @@ const Login: React.FC = () => {
                     value={formData.email}
                     onChange={handleChange}
                     variant="outlined"
+                    error={formData.email !== "" && !isValidEmail(formData.email)}
+                    helperText={
+                        formData.email !== "" && !isValidEmail(formData.email) ? "Некорректный email" : ""
+                    }
                     required
                 />
                 <TextField

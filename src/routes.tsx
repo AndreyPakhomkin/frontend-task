@@ -5,10 +5,12 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navigation from "./components/Navigation";
 import { Box } from "@mui/material";
+import ErrorAlert from "./components/ErrorAlert";
 
 const AppRoutes = () => {
     return (
         <BrowserRouter>
+            <ErrorAlert />
             <Navigation />
             <Box sx={{ margin: '3rem', display: 'flex', justifyContent: 'center' }}>
                 <Routes>

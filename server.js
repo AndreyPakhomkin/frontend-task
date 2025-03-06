@@ -1,10 +1,19 @@
-const jsonServer = require('json-server');
+const jsonServer = require("json-server");
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults();
 
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
+
+server.get('/info', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      info: "Some information about the Company."
+    }
+  });
+});
 
 server.post('/login', (req, res) => {
   const { email, password } = req.body;

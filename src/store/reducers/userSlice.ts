@@ -2,15 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface User {
     loggedIn: boolean,
-    email: string | null,
-    password: string | null,
     token: string | null
 }
 
 const initialState: User = {
     loggedIn: false,
-    email: null,
-    password: null,
     token: null
 }
 
@@ -20,8 +16,6 @@ const userSlice = createSlice({
     reducers: {
         setUser: (state, action: PayloadAction<User>) => {
             state.loggedIn = action.payload.loggedIn;
-            state.email = action.payload.email;
-            state.password = action.payload.password;
             state.token = action.payload.token;
         }
 

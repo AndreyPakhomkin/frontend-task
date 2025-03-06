@@ -1,8 +1,10 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import userReducer from './reducers/userSlice';
+import errorReducer from './reducers/errorSlice';
 
 const rootReducer = combineReducers({
-    user: userReducer
+    user: userReducer,
+    error: errorReducer
 });
 
 export default rootReducer;
