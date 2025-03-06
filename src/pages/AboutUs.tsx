@@ -28,7 +28,7 @@ const AboutUs = () => {
     return (
         <Box>
             <Typography variant="h5">
-                {info || "Загрузка..."}
+                {info || "Loading..."}
             </Typography>
         </Box>
     );

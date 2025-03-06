@@ -14,7 +14,10 @@ const ErrorAlert: React.FC = () => {
                 dispatch(setError({ errorStatus: false, errorMessage: null }));
             }, 5000);
 
-            return () => clearTimeout(timer);
+            return () => {
+                clearTimeout(timer);
+            };
+
         }
     }, [errorStatus])
 

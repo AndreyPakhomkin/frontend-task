@@ -36,6 +36,28 @@ server.post('/login', (req, res) => {
   }
 });
 
+server.get('/profile', (req, res) => {
+  const { token } = req.query;
+  const user = router.db.get('users').find({ token }).value();
+
+  if (user) {
+    res.json({
+      success: true,
+      data: {
+        fullname: user.fullname,
+        email: user.email
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      data: {
+        message: 'Access denied.'
+      }
+    });
+  }
+});
+
 server.use(router);
 server.listen(3001, () => {
   console.log('JSON Server is running on http://localhost:3001');

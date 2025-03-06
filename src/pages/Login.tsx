@@ -42,7 +42,7 @@ const Login: React.FC = () => {
             .then((data) => {
                 if (data.success) {
                     const userData = {
-                        token: data.token,
+                        token: data.data.token,
                         loggedIn: true
                     }
                     dispatch(setUser(userData));
