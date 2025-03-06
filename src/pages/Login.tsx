@@ -5,7 +5,7 @@ import { setUser } from "../store/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 
 interface Formdata {
-    username: string,
+    email: string,
     password: string
 }
 
@@ -13,7 +13,7 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const [formData, setFormData] = useState<Formdata>({ username: '', password: '' });
+    const [formData, setFormData] = useState<Formdata>({ email: '', password: '' });
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +30,7 @@ const Login: React.FC = () => {
                 .then((data) => {
                     if (data.success) {
                         const userData = {
-                            username: formData.username,
+                            email: formData.email,
                             password: formData.password,
                             token: String(data.token),
                             loggedIn: true
@@ -45,7 +45,7 @@ const Login: React.FC = () => {
         }
     };
 
-    const isFormValid = formData.username.trim() !== '' && formData.password.trim() !== '';
+    const isFormValid = formData.email.trim() !== '' && formData.password.trim() !== '';
 
     return (
         <Box>
@@ -72,15 +72,15 @@ const Login: React.FC = () => {
                 }}
             >
                 <TextField
-                    label="Username"
-                    name="username"
-                    value={formData.username}
+                    label="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
                     variant="outlined"
                     required
                 />
                 <TextField
-                    label="Password"
+                    label="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}

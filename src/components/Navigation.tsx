@@ -1,8 +1,22 @@
 import React from "react";
 import { Container, Button } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { setUser } from "../store/reducers/userSlice";
 
 const Navigation: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(state => state.user);
+
+    const logOut = () => {
+        dispatch(setUser({
+            loggedIn: false,
+            email: null,
+            password: null,
+            token: null
+        }))
+    }
+
     return (
         <Container
             maxWidth="sm"
@@ -25,43 +39,50 @@ const Navigation: React.FC = () => {
             >
                 About us
             </Button>
-            <Button
-                variant="outlined"
-                color="inherit"
-                component={Link}
-                to="/login"
-                sx={{
-                    color: 'primary.main',
-                    textDecoration: 'none'
-                }}
-            >
-                Sing In
-            </Button>
-            <Button
-                variant="outlined"
-                color="inherit"
-                component={Link}
-                to="/profile"
-                sx={{
-                    color: 'primary.main',
-                    textDecoration: 'none'
-                }}
-            >
-                Profile
-            </Button>
-            <Button
-                variant="outlined"
-                color="inherit"
-                component={Link}
-                to="/"
-                sx={{
-                    color: 'primary.main',
-                    textDecoration: 'none'
-                }}
-            >
-                Sing Out
-            </Button>
-        </ Container>
+            {!user.loggedIn &&
+                <Button
+                    variant="outlined"
+                    color="inherit"
+                    component={Link}
+                    to="/login"
+                    sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none'
+                    }}
+                >
+                    Sing In
+                </Button>
+            }
+            {user.loggedIn &&
+                <Button
+                    variant="outlined"
+                    color="inherit"
+                    component={Link}
+                    to="/profile"
+                    sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none'
+                    }}
+                >
+                    Profile
+                </Button>
+            }
+            {user.loggedIn &&
+                <Button
+                    variant="outlined"
+                    color="inherit"
+                    component={Link}
+                    to="/"
+                    sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none'
+                    }}
+                    onClick={logOut}
+                >
+                    Sing Out
+                </Button>
+            }
+        </ Container >
     )
 }
 
